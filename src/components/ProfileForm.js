@@ -99,7 +99,7 @@ const ProfileForm = () => {
 
   const handleEditProfile = (e) => {
     e.preventDefault();
-
+    // TODO: implement edit profile function
     if (!username.value) {
       return toast.error("The username field should not be empty");
     }

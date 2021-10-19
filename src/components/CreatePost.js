@@ -76,7 +76,7 @@ const CreatePost = ({ post }) => {
     const { feed, setFeed } = useContext(FeedContext);
     const caption = useInput("");
 
-
+    // TODO: implement minting function
     const handleSubmitPost = () => {
         if (!caption.value) {
             return toast.error("Please write something");

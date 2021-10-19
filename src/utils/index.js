@@ -63,6 +63,8 @@ export const client = (endpoint, { body, ...customConfig } = {}) => {
     });
   }
 
+  // TODO: remove ability to click into user profile pages
+  //TODO: add specific endpoints for fetching specific user data: loan, bid, borrow, history
   if (endpoint === `/${user1Brief.address}`){
     return new Promise((resolve) => {
       resolve({"data" : user1});
@@ -100,13 +102,14 @@ export const client = (endpoint, { body, ...customConfig } = {}) => {
       resolve({"data" : all_posts});
     });
   }
-  // return only posts on bidding
+  // TODO: implement fetch all posts available to bidding for current user
   if (endpoint === "/posts/bidding"){
     return new Promise((resolve) => {
       resolve({"data" : [post3, post4, post5]});
     });
   }
 
+  // TODO: implement fetch specific post by address (need to also implement visibility check)
   if (endpoint === "/posts/0x0F595AD6C6297fbeE67EF1348d44a777dD15cE24"){
     return new Promise((resolve) => {
       resolve({"data" : post1});

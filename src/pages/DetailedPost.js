@@ -109,10 +109,11 @@ const DetailedPost = () => {
   const handleAddBid = (e) => {
     if (e.keyCode === 13) {
       newBid.setValue("");
+      // TODO: implement bidding function
       return toast.success("Sorry, the bid feature isn't finished yet");
     }
   };
-
+  // TODO: implement bidding history visibility control
   useEffect(() => {
     client(`/posts/${postAddress}`)
       .then((res) => {

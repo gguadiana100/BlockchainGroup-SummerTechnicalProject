@@ -128,6 +128,7 @@ const Profile = () => {
               icon="post"
             />
           ) : (
+            // TODO: make sure to return only posts for bidding
             <PostPreview posts={profile?.bidPosts} />
           )}
         </>
@@ -143,6 +144,7 @@ const Profile = () => {
             />
           ) : (
             <div>
+              {/* TODO: make sure to return only posts user has borrowed */}
               {profile?.borrowPosts?.map((post) => (
                   <ExpandedPost key={post._id} post={post} />
               ))}
@@ -161,6 +163,7 @@ const Profile = () => {
                 />
             ) : (
                 <div>
+                  {/* TODO: make sure to return only posts user has lent */}
                   {profile?.loanPosts?.map((post) => (
                       <ExpandedPost key={post._id} post={post} />
                   ))}
@@ -179,6 +182,7 @@ const Profile = () => {
                 />
             ) : (
                 <div>
+                  {/* TODO: make sure to return only posts user has already completed */}
                   {profile?.history?.map((post) => (
                       <ExpandedPost key={post._id} post={post} />
                   ))}
