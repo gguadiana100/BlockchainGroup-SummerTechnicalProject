@@ -1,127 +1,195 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+// import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "abdk-libraries-solidity/ABDKMath64x64.sol";
 
-contract NFTLoan {
+contract P2PLoan is Pausable{
+  // ============ Structs ============
 
+  // attaches SafeMath lib to uint datatype
+  using SafeMath for uint; 
+
+  enum Status { PENDING, ACTIVE, CANCELLED, ENDED, DEFAULTED }
+
+  // NFT loan post struct
   struct Loan {
-    // NFT address
-    address tokenAddress;
-    // NFT owner
-    address tokenOwner;
-    // Current lender
-    address lender;
-    // NFT token id
-    uint256 tokenId;
-    // Fixed interest rate
-    uint256 interestRate;
-    // Current max bid
-    uint256 loanAmount;
-    // Timestamp of loan completion
-    uint256 loanCompleteTime;
+    uint loanID;
+    address payable lender;
+    address payable borrower;
+    uint NFTtokenID;
+    address NFTtokenAddress;
+    uint loanAmount;  // principal/capital of loan
+    uint interestRate;  // interest rate per period
+    uint loanCompleteTimeStamp; // timestamp of loan completion
+    Status status;
   }
 
-  // Number of loans issued
-  uint256 public numLoans;
-  // Mapping of loan number to loan struct
-  mapping(uint256 => Loan) public Loans;
+  // ============ Mutable Storage ============
 
+  // total number of loans created
+  uint public numOfLoans;
+  // map from loanID to loan instances
+  mapping(uint => Loan) public allLoans;
+  // address of user who created loan
+  address public creator; 
+
+  // ============ Events ============
+
+  event LoanCreated(
+    uint id,
+    address indexed owner,
+    uint tokenId,
+    address tokenAddress,
+    uint loanAmount,
+    uint interestRate,
+    uint loanCompleteTimeStamp
+  );
+  // New loan lender/bidder
+  event LoanUnderwritten(uint256 id, address lender);
+  // Loan drawn by NFT owner
+  event LoanDrawn(uint256 id);
+  // Loan repayed by address
+  event LoanRepayed(uint256 id, address lender, address repayer);
+  // Loan cancelled by NFT owner
+  event LoanCancelled(uint256 id);
+  // NFT seized by lender
+  event LoanSeized(uint256 id, address lender, address caller);
+
+  // ============ Modifiers ============
+
+  // checking if a loan is valid
+  modifier isValidLoanID(uint loanID) {
+          require(
+              loanID < numOfLoans,
+              "Loan ID is invalid."
+          );
+          _;
+      }
+  // controls user authorization for certain functions
+  modifier onlyCreator() { 
+      require(
+          msg.sender == creator,
+          "Only the creator of the loan can call this."
+      );
+      _;
+  }
+
+  // ============ Functions ============
+
+  constructor()  {
+        creator = msg.sender;
+        numOfLoans = 0;
+  }
+
+  function pauseLoans() public onlyCreator {
+      _pause();
+  }
+
+  function unPauseLoans() public onlyCreator {
+      _unpause();
+  }
+
+  /**
+    creates a new loan object 
+   */
   function createLoan(
     address _tokenAddress,
-    uint256 _tokenId,
-    uint256 _interestRate,
-    uint256 _loanAmount,
-    uint256 _loanCompleteTime
-  ) external returns (uint256) {
-    // Enforce creating future-dated loan
-    require(_loanCompleteTime > block.timestamp, "Can't create loan in past");
-
-    // NFT id
-    uint256 loanId = ++numLoans;
-
-    // Transfer NFT from owner to contract
-    IERC721(_tokenAddress).transferFrom(msg.sender, address(this), _tokenId);
-
-    // Create loan
-    Loans[loanId].tokenAddress = _tokenAddress;
-    Loans[loanId].tokenOwner = msg.sender;
-    Loans[loanId].tokenId = _tokenId;
-    Loans[loanId].interestRate = _interestRate;
-    Loans[loanId].loanAmount = _loanAmount;
-    Loans[loanId].loanCompleteTime = _loanCompleteTime;
+    uint _tokenID,
+    uint _loanAmount,
+    uint _interestRate,
+    uint _loanCompleteTimeStamp
+  ) external whenNotPaused {
+    
+    require(_interestRate < 100, "Interest must be lower than 100%.");
+    require(_loanCompleteTimeStamp > block.timestamp, "Can't create loan in past");
+    require(_loanCompleteTimeStamp - block.timestamp < 365 days, "Max loan period is 12 months");
 
 
-    // Return loan id
-    return loanId;
-  }
+    //TODO: async await for NFT transfer from NFt contract here
 
+    Loan storage l = allLoans[numOfLoans];
+    l.loanID = numOfLoans;
+    l.lender = payable(address(0x0)); // address of all 0's
+    l.borrower = payable(msg.sender);
+    l.NFTtokenID = _tokenID;
+    l.NFTtokenAddress = _tokenAddress;
+    l.loanAmount = _loanAmount;
+    l.interestRate = _interestRate;
+    l.loanCompleteTimeStamp = _loanCompleteTimeStamp;
+    l.status = Status.PENDING;
+    numOfLoans = SafeMath.add(numOfLoans, 1);
 
-  // connect to auction contract to determine who is the lender.
-  function setLender(uint256 _loanId) external{
-      Loan storage loan = Loans[_loanId];
-      loan.lender = msg.sender;
-  }
-
-
-  // owner of the NFT draw loan
-  function drawLoan(uint256 _loanId) external payable{
-    Loan storage loan = Loans[_loanId];
-    // Prevent non-loan-owner from drawing
-    require(loan.tokenOwner == msg.sender, "Must be NFT owner to draw.");
-
-    // transfer the loan money
-    (bool sent, ) = payable(msg.sender).call{value: loan.loanAmount}("");
-    require(sent, "Failed to draw capital.");
-
+    emit LoanCreated(
+      l.loanID,
+      msg.sender,
+      _tokenID,
+      _tokenAddress,
+      _loanAmount,
+      _interestRate,
+      _loanCompleteTimeStamp
+    );
   }
 
   /**
-   * Enables anyone to repay a loan on behalf of owner
-   * @param _loanId id of loan to repay
+    Executes a loan and pays chosen bidder
    */
-  function repayLoan(uint256 _loanId) external payable {
-    Loan storage loan = Loans[_loanId];
-    // Prevent repaying repaid loan
-    require(loan.tokenOwner != address(0), "Can't repay paid loan.");
-    // Prevent repaying loan after expiry
-    require(loan.loanCompleteTime >= block.timestamp, "Can't repay expired loan.");
+  function underwriteLoan(uint _loanID) external payable 
+    isValidLoanID(_loanID) whenNotPaused{
 
-    // Add historic interest paid to previous top bidders + accrued interest to top bidder
-    // As of current block (future = 0 seconds)
-    uint256 _totalInterest = calculateTotalInterest(_loanId, 0);
-    // Calculate additional capital required to process payout
-    uint256 _additionalCapital = loan.loanAmountDrawn + _totalInterest;
-    // Enforce additional required capital is passed to contract
-    require(msg.value >= _additionalCapital, "Insufficient repayment.");
+    emit LoanUnderwritten(_loanID, msg.sender);
+  }
 
-    // Payout current top bidder (loan amount + total pending interest)
-    (bool sent, ) = payable(loan.lender).call{value: (loan.loanAmount + _totalInterest)}("");
-    require(sent, "Failed to repay loan.");
 
-    // Transfer NFT back to owner
-    IERC721(loan.tokenAddress).transferFrom(address(this), loan.tokenOwner, loan.tokenId);
+  /**
+    Enables NFT owner to draw capital from top bid
+   */
+  function drawLoan(uint _loanID) external isValidLoanID(_loanID) whenNotPaused{
 
-    // Toggle loan repayment (nullify tokenOwner)
-    loan.tokenOwner = address(0);
-
+    // Emit draw event
+    emit LoanDrawn(_loanID);
   }
 
   /**
-   * Enables anyone to seize NFT, for lender, on loan default
-   * @param _loanId id of loan to seize collateral
+    Enables lender to reclaim NFt by paying borrower
    */
-  function seizeNFT(uint256 _loanId) external {
-    Loan memory loan = Loans[_loanId];
-    // Enforce loan is unpaid
-    require(loan.tokenOwner != address(0), "Can't seize from repaid loan.");
-    // Enforce loan is expired
-    require(loan.loanCompleteTime < block.timestamp, "Can't seize before expiry.");
+    function repayLoan(uint _loanID) external payable isValidLoanID(_loanID){
 
-    // Transfer NFT to lender
-    IERC721(loan.tokenAddress).transferFrom(address(this), loan.lender, loan.tokenId);
+      // transfer nft back to owner
 
+    // Emit repayment event 
+    emit LoanRepayed(_loanID, creator, msg.sender);
   }
 
+  /**
+   Helper function to calculate total amount from interest rate
+   */
+  function calculateRequiredRepayment(uint _loanID)
+      public view returns (uint) {
+    
+    // can calculate from backtracking from 
+    uint totalAmount = _loanID + 10;
 
+    return totalAmount;
+  }
+  
+  /**
+    Allows borrowers to seize nft if loan not paid on time
+   */
+  function seizeNFT(uint256 _loanID) external {
+    
+
+    // Emit seize event
+    emit LoanSeized(_loanID, creator, msg.sender);
+  }
+  
+  /** 
+    allows lender to cancel loan post
+   */
+  function cancelLoan(uint256 _loanID) external {
+    
+    emit LoanCancelled(_loanID);
+  }
 }
