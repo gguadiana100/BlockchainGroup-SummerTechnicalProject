@@ -50,13 +50,13 @@ contract P2PLoan is Pausable{
   // New loan lender/bidder
   event LoanUnderwritten(uint256 id, address lender);
   // Loan drawn by NFT owner
-  event LoanDrawn(uint256 id);
+  event LoanDrawn(uint id);
   // Loan repayed by address
-  event LoanRepayed(uint256 id, address lender, address repayer);
+  event LoanRepayed(uint id, address lender, address repayer);
   // Loan cancelled by NFT owner
-  event LoanCancelled(uint256 id);
+  event LoanCancelled(uint id);
   // NFT seized by lender
-  event LoanSeized(uint256 id, address lender, address caller);
+  event LoanSeized(uint id, address lender, address caller);
 
   // ============ Modifiers ============
 
@@ -101,7 +101,7 @@ contract P2PLoan is Pausable{
     uint _loanAmount,
     uint _interestRate,
     uint _loanCompleteTimeStamp
-  ) external whenNotPaused {
+  ) external whenNotPaused returns(uint _numOfLoans) {
     
     require(_interestRate < 100, "Interest must be lower than 100%.");
     require(_loanCompleteTimeStamp > block.timestamp, "Can't create loan in past");
@@ -131,6 +131,8 @@ contract P2PLoan is Pausable{
       _interestRate,
       _loanCompleteTimeStamp
     );
+
+    return numOfLoans;
   }
 
   /**
@@ -167,7 +169,7 @@ contract P2PLoan is Pausable{
    Helper function to calculate total amount from interest rate
    */
   function calculateRequiredRepayment(uint _loanID)
-      public view returns (uint) {
+      public pure returns (uint) {
     
     // can calculate from backtracking from 
     uint totalAmount = _loanID + 10;
@@ -192,4 +194,12 @@ contract P2PLoan is Pausable{
     
     emit LoanCancelled(_loanID);
   }
+
+   /**
+    gets specific of loan posting
+   */
+   function getLoan(uint _loanID) external view returns(Loan memory loan) {
+     return allLoans[_loanID];
+   }
+
 }

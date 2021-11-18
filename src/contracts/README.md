@@ -73,6 +73,10 @@ Example api function
   ```sh
   truffle test ./test/test_file_name.js
   ```
+* Testing with events
+  ```sh
+  truffle test --show-events ./test/test_file_name.js
+  ```
 * deploy
   ```sh
   truffle migrate --network rinkeby
