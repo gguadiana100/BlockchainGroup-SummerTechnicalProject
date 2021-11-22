@@ -28,8 +28,9 @@ contract('P2PLoan', (accounts) => {
 
   describe('create loan', () => {
     it('should increase numOfLoans', async () => {
+      console.log(Math.round(Date.now() / 1000));
       await contract.createLoan.sendTransaction(
-        accounts[1], 0, 100, 2, 1637278156, 
+        accounts[1], 0, 100, 2, Math.round(Date.now() / 1000) + 100, // normalize to seconds then add 100 seconds 
         { from: accounts[0] }
       );
       const n = await contract.numOfLoans.call();

@@ -45,7 +45,8 @@ contract P2PLoan is Pausable{
     address tokenAddress,
     uint loanAmount,
     uint interestRate,
-    uint loanCompleteTimeStamp
+    uint loanCompleteTimeStamp,
+    uint blockTimeStamp
   );
   // New loan lender/bidder
   event LoanUnderwritten(uint256 id, address lender);
@@ -102,7 +103,7 @@ contract P2PLoan is Pausable{
     uint _interestRate,
     uint _loanCompleteTimeStamp
   ) external whenNotPaused returns(uint _numOfLoans) {
-    
+ 
     require(_interestRate < 100, "Interest must be lower than 100%.");
     require(_loanCompleteTimeStamp > block.timestamp, "Can't create loan in past");
     require(_loanCompleteTimeStamp - block.timestamp < 365 days, "Max loan period is 12 months");
@@ -129,7 +130,8 @@ contract P2PLoan is Pausable{
       _tokenAddress,
       _loanAmount,
       _interestRate,
-      _loanCompleteTimeStamp
+      _loanCompleteTimeStamp,
+      block.timestamp
     );
 
     return numOfLoans;
