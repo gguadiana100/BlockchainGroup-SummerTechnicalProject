@@ -53,10 +53,8 @@ contract P2PLoan is Pausable{
   event LoanDrawn(uint id);
   // Loan repayed by address
   event LoanRepayed(uint id, address lender, address repayer);
-  // Loan cancelled by NFT owner
-  event LoanDefault(uint id);
   // NFT seized by lender
-  event LoanSeized(uint id, address lender, address caller);
+  event LoanDefault(uint id, address lender, address caller);
 
   // ============ Modifiers ============
 
@@ -172,18 +170,20 @@ contract P2PLoan is Pausable{
     emit LoanDefault(_loanID, creator, msg.sender);
   }
   
-   /**
-    gets all loan listings
-   */
-   function getLoan(uint _loanID) external view returns(int) {
-     return 0;
-   }
+  // uncomment if you're working on this. this is just to silence warnings
 
    /**
-    gets all loan listings
+    gets loan listings
    */
-   function getAllLoans() external view returns(int) {
-     return 0;
+   function getLoan(uint _loanID) external view returns(Loan memory loan) {
+     return allLoans[_loanID];
    }
+
+  //  /**
+  //   gets all loan listings
+  //  */
+  //  function getAllLoans() external view returns(int) {
+  //    return 0;
+  //  }
 
 }
