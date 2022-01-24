@@ -28,7 +28,6 @@ contract('P2PLoan', (accounts) => {
 
   describe('create loan', () => {
     it('should increase numOfLoans', async () => {
-      console.log(Math.round(Date.now() / 1000));
       await contract.createLoan.sendTransaction(
         accounts[1], 0, 100, 2, Math.round(Date.now() / 1000) + 100, // normalize to seconds then add 100 seconds 
         { from: accounts[0] }
@@ -47,4 +46,33 @@ contract('P2PLoan', (accounts) => {
       assert.equal(loan.status, 0, "status incorrect")
     })
   })
+/*
+  describe('new function', () => {
+    it('should behave like this', async () => {
+      # calling a function that changes the block chain directly requires 
+      # .sendTransaction(arg1, arg2, ......, {from: accounts[0]})
+      # in this case accounts[0] should be the msg.sender
+
+      await contract.createUpdateOrDeleteFunc.sendTransaction(
+        arg1Var, arg2Var,
+        { from: accounts[0] }
+      );
+
+      # calling a function, usually a read function, that only reads data and doesn't change the blockchain directly
+      #  need to use .call()
+      #  also all function calls from the contract will need to use await
+      #  code sample: 
+
+      const n = await contract.readSomeVarFunc.call();
+
+      #  good practice to include failure message for easier debugging when you have more assert statements
+      # assert.equal(n.field_1, expectedValue1, "expectedValue is not n2")
+      # assert.equal(n.field_2, expectedValue2, "expectedValue is not n2")
+    })
+
+    it('should also behave like this', async () => {
+      # more tests for the same function
+    })
+  })
+*/
 })

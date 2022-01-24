@@ -17,8 +17,8 @@ contract P2PLoan is Pausable{
   // NFT loan post struct
   struct Loan {
     uint loanID;
-    address payable lender;
-    address payable borrower;
+    address payable lender; // owner of capital
+    address payable borrower; // owner of token
     uint NFTtokenID;
     address NFTtokenAddress;
     uint loanAmount;  // principal/capital of loan
@@ -48,14 +48,13 @@ contract P2PLoan is Pausable{
     uint loanCompleteTimeStamp,
     uint blockTimeStamp
   );
-  // New loan lender/bidder
-  event LoanUnderwritten(uint256 id, address lender);
+
   // Loan drawn by NFT owner
   event LoanDrawn(uint id);
   // Loan repayed by address
   event LoanRepayed(uint id, address lender, address repayer);
   // Loan cancelled by NFT owner
-  event LoanCancelled(uint id);
+  event LoanDefault(uint id);
   // NFT seized by lender
   event LoanSeized(uint id, address lender, address caller);
 
@@ -85,13 +84,6 @@ contract P2PLoan is Pausable{
         numOfLoans = 0;
   }
 
-  function pauseLoans() public onlyCreator {
-      _pause();
-  }
-
-  function unPauseLoans() public onlyCreator {
-      _unpause();
-  }
 
   /**
     creates a new loan object 
@@ -137,20 +129,11 @@ contract P2PLoan is Pausable{
     return numOfLoans;
   }
 
-  /**
-    Executes a loan and pays chosen bidder
-   */
-  function underwriteLoan(uint _loanID) external payable 
-    isValidLoanID(_loanID) whenNotPaused{
-
-    emit LoanUnderwritten(_loanID, msg.sender);
-  }
-
 
   /**
     Enables NFT owner to draw capital from top bid
    */
-  function drawLoan(uint _loanID) external isValidLoanID(_loanID) whenNotPaused{
+  function drawLoan(uint _loanID) external isValidLoanID(_loanID){
 
     // Emit draw event
     emit LoanDrawn(_loanID);
@@ -186,22 +169,21 @@ contract P2PLoan is Pausable{
     
 
     // Emit seize event
-    emit LoanSeized(_loanID, creator, msg.sender);
+    emit LoanDefault(_loanID, creator, msg.sender);
   }
   
-  /** 
-    allows lender to cancel loan post
+   /**
+    gets all loan listings
    */
-  function cancelLoan(uint256 _loanID) external {
-    
-    emit LoanCancelled(_loanID);
-  }
+   function getLoan(uint _loanID) external view returns(int) {
+     return 0;
+   }
 
    /**
-    gets specific of loan posting
+    gets all loan listings
    */
-   function getLoan(uint _loanID) external view returns(Loan memory loan) {
-     return allLoans[_loanID];
+   function getAllLoans() external view returns(int) {
+     return 0;
    }
 
 }
