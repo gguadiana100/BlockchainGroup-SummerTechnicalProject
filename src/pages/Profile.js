@@ -84,36 +84,36 @@ const Profile = () => {
           style={{ fontWeight: tab === "BIDS" ? "500" : "" }}
           onClick={() => setTab("BIDS")}
         >
-          <SavedIcon />
+          <SavedIcon  icon="BIDS" tabId={tab}/>
           <span>Bids</span>
         </div>
         <div
           style={{ fontWeight: tab === "BORROW" ? "500" : "" }}
           onClick={() => setTab("BORROW")}
         >
-          <SavedIcon />
+          <SavedIcon  icon="BORROW" tabId={tab}/>
           <span>Borrow</span>
         </div>
         <div
             style={{ fontWeight: tab === "LEND" ? "500" : "" }}
             onClick={() => setTab("LEND")}
         >
-          <SavedIcon />
+          <SavedIcon   icon="LEND" tabId={tab}/>
           <span>Lend</span>
         </div>
         <div
             style={{ fontWeight: tab === "HISTORY" ? "500" : "" }}
             onClick={() => setTab("HISTORY")}
         >
-          <SavedIcon />
+          <SavedIcon    icon="HISTORY" tabId={tab}/>
           <span>History</span>
         </div>
         {profile?.isMe &&
           <div
               style={{ fontWeight: tab === "CREATE" ? "500" : "" }}
-              onClick={() => setTab("CREATE")}
+          onClick={() => setTab("CREATE")} 
           >
-            <SavedIcon />
+            <SavedIcon  icon="CREATE" tabId={tab}/>
             <span>Create</span>
           </div>
         }
