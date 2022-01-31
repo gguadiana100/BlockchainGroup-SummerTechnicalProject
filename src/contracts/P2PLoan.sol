@@ -12,7 +12,7 @@ contract P2PLoan is Pausable{
   // attaches SafeMath lib to uint datatype
   using SafeMath for uint; 
 
-  enum Status { PENDING, ACTIVE, CANCELLED, ENDED, DEFAULTED }
+  enum Status { ACTIVE, ENDED, DEFAULTED }
 
   // NFT loan post struct
   struct Loan {
@@ -110,7 +110,7 @@ contract P2PLoan is Pausable{
     l.loanAmount = _loanAmount;
     l.interestRate = _interestRate;
     l.loanCompleteTimeStamp = _loanCompleteTimeStamp;
-    l.status = Status.PENDING;
+    l.status = Status.ACTIVE;
     numOfLoans = SafeMath.add(numOfLoans, 1);
 
     emit LoanCreated(
@@ -163,7 +163,7 @@ contract P2PLoan is Pausable{
   /**
     Allows borrowers to seize nft if loan not paid on time
    */
-  function seizeNFT(uint256 _loanID) external {
+  function loanDefaulted(uint256 _loanID) external {
     
 
     // Emit seize event
@@ -185,5 +185,15 @@ contract P2PLoan is Pausable{
   //  function getAllLoans() external view returns(int) {
   //    return 0;
   //  }
+
+  //  /**
+  //   gets all loan listings that belong to one person
+  //  */
+  //  function getAllUserLoans(address userAddress) external view returns(int) {
+  //    return 0;
+  //  }
+
+  // return type needs to be changed accordingly !!
+
 
 }
