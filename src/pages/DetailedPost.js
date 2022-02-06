@@ -151,6 +151,7 @@ const Wrapper = styled.div`
 
     .bid-history {
       border-left: 1px solid ${(props) => props.theme.borderColor};
+      max-height: 200px;
     }
 `;
 
@@ -232,7 +233,7 @@ const DetailedPost = () => {
       <div className="bid-history">
         <div className="bids">
             {bids.map((bid) => (
-              <Bid user={bid.user} amount={bid.amount}/>
+              <Bid user={bid.user} amount={bid.amount} duration={bid.duration} interest={bid.interest}/>
             ))}
         </div>
       </div>
