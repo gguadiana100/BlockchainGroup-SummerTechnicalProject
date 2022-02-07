@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.3;
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 // import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
@@ -32,7 +32,7 @@ contract P2PLoan is Pausable{
   // total number of loans created
   uint public numOfLoans;
   // map from loanID to loan instances
-  mapping(uint => Loan) public allLoans;
+  Loan[] public allLoans;
   // address of user who created loan
   address public creator; 
 
@@ -100,21 +100,22 @@ contract P2PLoan is Pausable{
 
 
     //TODO: async await for NFT transfer from NFt contract here
+    allLoans.push(Loan({
+      loanID: numOfLoans,
+      lender: payable(address(0x0)), // address of all 0's
+      borrower: payable(msg.sender),
+      NFTtokenID: _tokenID,
+      NFTtokenAddress: _tokenAddress,
+      loanAmount: _loanAmount,
+      interestRate: _interestRate,
+      loanCompleteTimeStamp: _loanCompleteTimeStamp,
+      status: Status.ACTIVE
+    }));
 
-    Loan storage l = allLoans[numOfLoans];
-    l.loanID = numOfLoans;
-    l.lender = payable(address(0x0)); // address of all 0's
-    l.borrower = payable(msg.sender);
-    l.NFTtokenID = _tokenID;
-    l.NFTtokenAddress = _tokenAddress;
-    l.loanAmount = _loanAmount;
-    l.interestRate = _interestRate;
-    l.loanCompleteTimeStamp = _loanCompleteTimeStamp;
-    l.status = Status.ACTIVE;
     numOfLoans = SafeMath.add(numOfLoans, 1);
 
     emit LoanCreated(
-      l.loanID,
+      allLoans[numOfLoans - 1].loanID,
       msg.sender,
       _tokenID,
       _tokenAddress,
@@ -132,7 +133,7 @@ contract P2PLoan is Pausable{
     Enables NFT owner to draw capital from top bid
    */
   function drawLoan(uint _loanID) external isValidLoanID(_loanID){
-
+    
     // Emit draw event
     emit LoanDrawn(_loanID);
   }
