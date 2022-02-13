@@ -28,6 +28,9 @@ contract NFTManager is ERC721URIStorage {
     function getLatestId() view public returns (uint256){
         return _tokenIds.current();
     }
+    function getAddr() view public returns (address){
+        return address(this);
+    }
 }
 
 // pragma solidity ^0.8.0;
