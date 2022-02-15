@@ -23,6 +23,7 @@ contract P2PLoan is Pausable{
     address NFTtokenAddress;
     uint loanAmount;  // principal/capital of loan
     uint interestRate;  // interest rate per period
+    uint loanCreatedTimeStamp;
     uint loanCompleteTimeStamp; // timestamp of loan completion
     Status status;
   }
@@ -45,8 +46,8 @@ contract P2PLoan is Pausable{
     address tokenAddress,
     uint loanAmount,
     uint interestRate,
-    uint loanCompleteTimeStamp,
-    uint blockTimeStamp
+    uint loanCreatedTimeStamp,
+    uint loanCompleteTimeStamp
   );
 
   // Loan drawn by NFT owner
@@ -108,6 +109,7 @@ contract P2PLoan is Pausable{
       NFTtokenAddress: _tokenAddress,
       loanAmount: _loanAmount,
       interestRate: _interestRate,
+      loanCreatedTimeStamp: block.timestamp,
       loanCompleteTimeStamp: _loanCompleteTimeStamp,
       status: Status.ACTIVE
     }));
@@ -121,8 +123,8 @@ contract P2PLoan is Pausable{
       _tokenAddress,
       _loanAmount,
       _interestRate,
-      _loanCompleteTimeStamp,
-      block.timestamp
+      block.timestamp,
+      _loanCompleteTimeStamp
     );
 
     return numOfLoans;
@@ -152,13 +154,20 @@ contract P2PLoan is Pausable{
   /**
    Helper function to calculate total amount from interest rate
    */
-  function calculateRequiredRepayment(uint _loanID)
-      public pure returns (uint) {
-    
-    // can calculate from backtracking from 
-    uint totalAmount = _loanID + 10;
+  function calculateRequiredRepayment(uint _loanID, uint _time) public view returns (uint) {
+    // fetch loan by id
+    Loan memory loan = allLoans[_loanID];
+    // calculate month passed since loan creation
+    uint timePassed = _time - loan.loanCreatedTimeStamp;
+    uint monthsConversion = 2592000;
+    uint monthsPassed = SafeMath.add(SafeMath.div(timePassed, monthsConversion), 1);
+    // calculate appropriate interest rate by months
+    int128 _monthlyInterestRate = ABDKMath64x64.divu(loan.interestRate, monthsPassed);
+    int128 _realInterestRate = ABDKMath64x64.divi(_monthlyInterestRate, 100);
+    // calculate total interest accured so far
+    uint totalInterestAccured = ABDKMath64x64.mulu(_realInterestRate, loan.loanAmount);
 
-    return totalAmount;
+    return SafeMath.add(totalInterestAccured, loan.loanAmount);
   }
   
   /**
