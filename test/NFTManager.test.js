@@ -16,12 +16,10 @@ contract('NFTManager', (accounts) => {
     let contractB
     before(async () => {
       contract = await NFTManager.deployed()
-      contractA = await NFTManager.deployed()
-      contractB = await NFTManager.deployed()
     })
     it('should match first account on ganache', async () => {
       // change to your own acc on ganache
-      assert.equal(accounts[0], "0xe44187E2E4A686C48de0CEb3d0409A33139B4e10")
+      assert.equal(accounts[0], "0xa507B5DE7371737622E9AB164b64A88Cd012d681")
     })
     it('should match the name and symbol', async () => {
       const contract_name = await contract.name.call()
@@ -39,31 +37,31 @@ contract('NFTManager', (accounts) => {
       assert.equal(token_id_1, 1)
       const requested_uri = await contract.tokenURI(token_id_1)
       assert.equal(requested_uri,token_URI_1)
+      const owner_1 = await contract.ownerOf(token_id_1)
+      assert.equal(owner_1,accounts[0])
     })
     it('create 2nd token', async () => {
       const token_URI_2 = "https://ipfs.io/ipfs/Qmd9MCGtdVz2miNumBHDbvj8bigSgTwnr4SbyH6DNnpWd"
-      await contract.createToken(token_URI_2,{from:accounts[0]})
+      await contract.createToken(token_URI_2,{from:accounts[1]})
       const token_id_2 = await contract.getLatestId()
       assert.equal(token_id_2, 2)
       const requested_uri = await contract.tokenURI(token_id_2)
       assert.equal(requested_uri,token_URI_2)
+      const owner_2 = await contract.ownerOf(token_id_2)
+      assert.equal(owner_2,accounts[1])
     })
-    it('Acc[0] -> NFT in contractA', async () => { 
-      const URI = "https://ipfs.io/ipfs/Qmd9MCGtdVz2miNumBHDbvj8bigSgTwnr4SbyH6DNnpWdt?filename=1-PUG.json"
-      await contractA.createToken(URI,{from:accounts[0]})
-      const NFTid = await contractA.getLatestId()
-      const NFTuri = await contract.tokenURI(NFTid)
-      assert.equal(URI, NFTuri)
+    it('transfer token', async () => {
+      await contract.safeTransferFrom(accounts[0], accounts[1], 1, {from: accounts[0]})
+      const owner_1= await contract.ownerOf(1) // should now be accounts[1]
+      assert.equal(accounts[1], owner_1)
+      const owner_2= await contract.ownerOf(2)
+      assert.equal(accounts[1], owner_2)
+      const account1_balance = await contract.balanceOf(accounts[1])
+      assert.equal(account1_balance, 2)
+      const account0_balance = await contract.balanceOf(accounts[0])
+      assert.equal(account0_balance, 0)
     })
-    it('transfer NFT from contractA -> contractB', async () => {
-      const URI = "https://ipfs.io/ipfs/Qmd9MCGtdVz2miNumBHDbvj8bigSgTwnr4SbyH6DNnpWdt?filename=1-PUG.json"
-      let a = await contractA.getAddr()
-      let b = await contractB.getAddr()
-      contractA.safeTransferFrom(a, b, URI)
-      
-      console.log(a)
-      console.log(b)
-    })
+
   })
 })
 
