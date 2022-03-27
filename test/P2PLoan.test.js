@@ -1,6 +1,11 @@
 const { assert } = require('chai');
 require('dotenv').config();
 
+/* commands
+  truffle test ./test/P2PLoan.test.js
+  truffle test --show-events ./test/P2PLoan.test.js
+*/
+
 // SPDX-License-Identifier: GPL-3.0
 const P2PLoan = artifacts.require('./P2PLoan.sol')
 
@@ -34,8 +39,14 @@ contract('P2PLoan', (accounts) => {
 
     it('should increase numOfLoans', async () => {
       await contract.createLoan.sendTransaction(
-        accounts[1], 0, 100, 2, Math.round(Date.now() / 1000) + 100, // normalize to seconds then add 100 seconds 
-        { from: accounts[0] }
+        accounts[0], // lender address
+        accounts[1], // borrower address
+        accounts[2], // token address
+        0, // token id
+        100, // loan amount
+        2,  // monthly interest rate 
+        30, // loan duration in days
+        { from: accounts[0] } // sent from the lender
       );
       const n = await contract.numOfLoans.call();
       assert.equal(n.toNumber(), 1, "numOfLoan not at 1")
@@ -44,12 +55,42 @@ contract('P2PLoan', (accounts) => {
     it('should populate allLoans with correct data', async () => {
       const loan = await contract.getLoan.call(0);
       assert.equal(loan.loanID, 0, "loanID incorrect")
-      assert.equal(loan.lender, 0x0, "lender address incorrect")
-      assert.equal(loan.borrower, accounts[0], "borrower address incorrect")
+      assert.equal(loan.lender, accounts[0], "lender address incorrect")
+      assert.equal(loan.borrower, accounts[1], "borrower address incorrect")
       assert.equal(loan.NFTtokenID, 0, "TokenID incorrect")
-      assert.equal(loan.NFTtokenAddress, accounts[1], "token address incorrect")
+      assert.equal(loan.NFTtokenAddress, accounts[2], "token address incorrect")
+      assert.equal(loan.loanAmount, 100, "loan amount incorrect")
+      assert.equal(loan.totalAmountDue, 102, "loan amount due incorrect")
+      assert.equal(loan.interestRate, 2, "loan interest incorrect")
+      assert.equal(loan.loanDuration, 30, "duration incorrect")
       assert.equal(loan.status, 0, "status incorrect")
     })
+
+    it('should calculate completeTimeStamp', async () => {
+      const loan = await contract.getLoan.call(0);
+      
+      const startTime = loan.loanCreatedTimeStamp
+      const endTime = startTime + loan.loanDuration * 86400
+      assert.equal(loan.loanCompleteTimeStamp, endTime, "complete time stamp incorrect")
+    })
+
+    it('should increase balance of lender', async () => {
+      
+      const lenderInitBalance = await contract.getBalanceInEth(acc1)
+
+      await contract.createLoan.sendTransaction(
+        accounts[0], // lender address
+        accounts[1], // borrower address
+        accounts[2], 
+        0, 100, 2, 30, { from: accounts[0] }
+      );
+
+      const lenderFinalBalance = await contract.getBalanceInEth(acc1)
+      const diff = lenderFinalBalance - lenderInitBalance
+      assert.equal(diff, 100, "loan drawn amount is incorrect")
+    })
+
+
   })
 
 /*
