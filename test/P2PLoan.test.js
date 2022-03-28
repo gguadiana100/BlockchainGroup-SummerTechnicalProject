@@ -1,6 +1,70 @@
 const { assert } = require('chai');
 require('dotenv').config();
 
+function makeStruct(names) {
+  var names = names.split(' ');
+  var count = names.length;
+  function constructor() {
+    for (var i = 0; i < count; i++) {
+      this[names[i]] = arguments[i];
+    }
+  }
+  return constructor;
+}
+
+var loanArgs = makeStruct(
+  "lender borrower NFTtokenID NFTtokenAddress loanAmount interestRate loanDuration"
+);
+
+function getRandomInt(max) {
+  return Math.floor(Math.random() * max);
+}
+
+// factory function for creating new random loans
+// use count to specify how many loans to create
+// set rand to true to randomize output
+async function loanFactory(_contract, accounts, count, rand=false) {
+  for (var i = 0; i < count; i++){
+    var a = i % 10;
+    if (rand){
+      a = getRandomInt(10)
+    }
+    const b = (a + 1) % 10
+    const c = (a + 2) % 10
+
+    const randArgs = new loanArgs(
+      accounts[a], // lender address
+      accounts[b], // borrower address
+      0, // token id
+      accounts[c], // token address
+      getRandomInt(1000), // loan amount
+      getRandomInt(50),  // monthly interest rate 
+      (getRandomInt(11) + 1) * 30, // loan duration in days
+    );
+
+    const args = new loanArgs(
+      accounts[0], // lender address
+      accounts[1], // borrower address
+      0, // token id
+      accounts[2], // token address
+      100, // loan amount
+      2,  // monthly interest rate 
+      30, // loan duration in days
+    );
+    
+    if (rand) {
+      await _contract.createLoan.sendTransaction(
+        randArgs, { from: accounts[0], gas:3000000} // sent from the lender
+      );
+    } else {
+      await _contract.createLoan.sendTransaction(
+        args, { from: accounts[0], gas:3000000} // sent from the lender
+      );
+    }
+  }
+}
+
+
 /* commands
   truffle test ./test/P2PLoan.test.js
   truffle test --show-events ./test/P2PLoan.test.js
@@ -38,16 +102,7 @@ contract('P2PLoan', (accounts) => {
     })
 
     it('should increase numOfLoans', async () => {
-      await contract.createLoan.sendTransaction(
-        accounts[0], // lender address
-        accounts[1], // borrower address
-        accounts[2], // token address
-        0, // token id
-        100, // loan amount
-        2,  // monthly interest rate 
-        30, // loan duration in days
-        { from: accounts[0] } // sent from the lender
-      );
+      await loanFactory(contract, accounts, 1) // create 1 new loan without random variables
       const n = await contract.numOfLoans.call();
       assert.equal(n.toNumber(), 1, "numOfLoan not at 1")
     })
@@ -68,29 +123,11 @@ contract('P2PLoan', (accounts) => {
 
     it('should calculate completeTimeStamp', async () => {
       const loan = await contract.getLoan.call(0);
-      
-      const startTime = loan.loanCreatedTimeStamp
+      const startTime = Number(loan.loanCreatedTimeStamp)
       const endTime = startTime + loan.loanDuration * 86400
+
       assert.equal(loan.loanCompleteTimeStamp, endTime, "complete time stamp incorrect")
     })
-
-    it('should increase balance of lender', async () => {
-      
-      const lenderInitBalance = await contract.getBalanceInEth(acc1)
-
-      await contract.createLoan.sendTransaction(
-        accounts[0], // lender address
-        accounts[1], // borrower address
-        accounts[2], 
-        0, 100, 2, 30, { from: accounts[0] }
-      );
-
-      const lenderFinalBalance = await contract.getBalanceInEth(acc1)
-      const diff = lenderFinalBalance - lenderInitBalance
-      assert.equal(diff, 100, "loan drawn amount is incorrect")
-    })
-
-
   })
 
 /*
@@ -99,12 +136,7 @@ contract('P2PLoan', (accounts) => {
       contract = await P2PLoan.deployed()    // always deploy a brand new contract with empty allLoans
     })
 
-    for (let i = 0; i < 3, i ++) {
-      await contract.createLoan.sendTransaction(
-        accounts[i + 1], 0, 100, 2, Math.round(Date.now() / 1000) + 100 * i,   // then, create/initiate your loan instances as needed to test the function
-        { from: accounts[i] }
-      );
-    }
+    await loanFactory(contract, accounts, 5) // creates 5 new loans
     
     it('should behave like this', async () => {
       # calling a function that changes the block chain directly requires 

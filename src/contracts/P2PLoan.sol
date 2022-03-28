@@ -30,6 +30,16 @@ contract P2PLoan {
     Status status;
   }
 
+  struct loanArgs {
+    address payable lender; // owner of capital
+    address payable borrower; // owner of NFT
+    uint NFTtokenID;
+    address NFTtokenAddress;
+    uint loanAmount;  // principal/capital of loan
+    uint interestRate;  // interest rate per month
+    uint loanDuration; // number of days
+  }
+
   // ============ Mutable Storage ============
 
   // total number of loans created
@@ -82,59 +92,49 @@ contract P2PLoan {
   /**
     creates a new loan object 
    */
-  function createLoan(
-    address _lender,
-    address _borrower,
-    address _tokenAddress,
-    uint _tokenID,
-    uint _loanAmount,
-    uint _interestRate,
-    uint _loanDuration
-  ) external returns(uint _numOfLoans) {
+  function createLoan(loanArgs memory _loan) external returns(uint _numOfLoans) {
  
-    require(_interestRate < 100, "Interest must be lower than 100%.");
-    require(_loanDuration > 0, "Can't create loan in past");
-    require(_loanDuration < 360, "Max loan period is 12 months/360 days");
-    require(_loanDuration % 30 == 0, "loan period must be in 30 day intervals");
+    require(_loan.interestRate < 100, "Interest must be lower than 100%.");
+    require(_loan.loanDuration > 0, "Can't create loan in past");
+    require(_loan.loanDuration < 360, "Max loan period is 12 months/360 days");
+    require(_loan.loanDuration % 30 == 0, "loan period must be in 30 day intervals");
 
     //TODO: async await for NFT transfer from NFt contract here
 
-    uint durationInUnix = SafeMath.mul(_loanDuration, 86400);
+    uint durationInUnix = SafeMath.mul(_loan.loanDuration, 86400);
     uint _loanCompleteTimeStamp = SafeMath.add(durationInUnix, block.timestamp);
     require(_loanCompleteTimeStamp > block.timestamp, "can't create loan in the past");
 
     // calculate total payment due
-    uint numOfMonths = SafeMath.div(_loanDuration, 30);
-    uint totalInterestRate =  SafeMath.mul(numOfMonths, _interestRate);
-    uint totalInterestDue = SafeMath.mul(totalInterestRate, _loanAmount);
+    uint numOfMonths = SafeMath.div(_loan.loanDuration, 30);
+    uint totalInterestRate =  SafeMath.mul(numOfMonths, _loan.interestRate);
+    uint totalInterestDue = SafeMath.mul(totalInterestRate, _loan.loanAmount);
     int128 realInterestDue = ABDKMath64x64.divu(totalInterestDue, 100);
     uint unsignedRealInterestDue = ABDKMath64x64.toUInt(realInterestDue);
-    uint _totalAmountDue = SafeMath.add(unsignedRealInterestDue, _loanAmount);
+    uint _totalAmountDue = SafeMath.add(unsignedRealInterestDue, _loan.loanAmount);
 
     // add loan to allLoans array 
     allLoans.push(Loan({
       loanID: numOfLoans,
-      lender: payable(_lender),
-      borrower: payable(_borrower),
-      NFTtokenID: _tokenID,
-      NFTtokenAddress: _tokenAddress,
-      loanAmount: _loanAmount,
+      lender: payable(_loan.lender),
+      borrower: payable(_loan.borrower),
+      NFTtokenID: _loan.NFTtokenID,
+      NFTtokenAddress: _loan.NFTtokenAddress,
+      loanAmount: _loan.loanAmount,
       totalAmountDue: _totalAmountDue,
-      interestRate: _interestRate,
+      interestRate: _loan.interestRate,
       loanCreatedTimeStamp: block.timestamp,
-      loanDuration: _loanDuration,
+      loanDuration: _loan.loanDuration,
       loanCompleteTimeStamp: _loanCompleteTimeStamp,
       status: Status.ACTIVE
     }));
 
     // store loan id in user arrays for easier read access
-    userBorrow[_borrower].push(numOfLoans);
-    userLend[_lender].push(numOfLoans);
+    userBorrow[_loan.borrower].push(numOfLoans);
+    userLend[_loan.lender].push(numOfLoans);
 
     // execute transaction
-    (bool sent, ) = payable(_lender).call{value: _loanAmount}("");
-    require(sent, "Failed to draw capital");
-    emit LoanDrawn(numOfLoans, _lender, _loanAmount);
+    // auction contract takes cares of this
 
     // adjust nums of loans according and emit event
     numOfLoans = SafeMath.add(numOfLoans, 1);
