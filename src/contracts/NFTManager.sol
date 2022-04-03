@@ -3,9 +3,10 @@ pragma solidity ^0.8.3;
 
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
-contract NFTManager is ERC721URIStorage { 
+contract NFTManager is ERC721URIStorage, IERC721Receiver { 
     event returnTokenId(
         uint256 _tokenId
     );
@@ -30,6 +31,10 @@ contract NFTManager is ERC721URIStorage {
     }
     function getAddr() view public returns (address){
         return address(this);
+    }
+
+    function onERC721Received(address, address, uint256, bytes memory) public virtual override returns (bytes4) {
+        return this.onERC721Received.selector;
     }
 }
 
