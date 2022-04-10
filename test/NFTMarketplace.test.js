@@ -39,11 +39,20 @@ contract('NFTMarketplace', (accounts) => {
         assert.equal(isContract,true)
     })
     it('checking Lock NFT function', async () =>{
+        // console.log("accounts[0]",accounts[0])
+        // console.log("contract Addr",nft_contract.address)
+        // console.log("market Addr",market_contract.address)
+
         await nft_contract.approve(market_contract.address,1,{from:accounts[0]})
         await market_contract.lockNFT(nft_contract.address,1,{from:accounts[0]})
         //give permission
         const owner = await nft_contract.ownerOf(1)
         assert.equal(owner,market_contract.address)
+
+      //test if the token can be unlocked
+        await market_contract.unlockNFT(nft_contract.address,1,accounts[0])
+        const ownerNew = await nft_contract.ownerOf(1)
+        assert.equal(ownerNew,accounts[0])
     })
 
 

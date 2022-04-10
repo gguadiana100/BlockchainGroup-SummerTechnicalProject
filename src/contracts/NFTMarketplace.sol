@@ -16,8 +16,7 @@ contract NFTMarketplace is IERC721Receiver {
 
     //original owner -->  nft(contract address, token_id)
     mapping(address => NFT) public NFT_list;
-    
-    //helper
+
     //check if the address is a contract address
     function isContract(address _addr) public view returns (bool) {
         uint256 size;
@@ -28,8 +27,6 @@ contract NFTMarketplace is IERC721Receiver {
     }
 
     // for NFT minted on our own platform - NFTManager
-     
-
 
     // LockNFT(address contractAddess, uint256 token_id)
     function lockNFT(address _addressNFTManager, uint256 _token_id) external returns (bool) {
