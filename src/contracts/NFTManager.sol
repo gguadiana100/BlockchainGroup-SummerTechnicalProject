@@ -16,6 +16,10 @@ contract NFTManager is ERC721URIStorage {
     constructor() ERC721("NFT Manager", "NFTM") {
     }
 
+    token[] private NFTList;
+
+    mapping(address => uint256[]) private balance;
+
     function createToken(string memory tokenURI) public returns (uint256) {
         uint256 oldItemId = _tokenIds.current();
         _tokenIds.increment();
@@ -23,6 +27,8 @@ contract NFTManager is ERC721URIStorage {
         require(newItemId == oldItemId + 1, "not incrementing");
         _mint(msg.sender, newItemId);
         _setTokenURI(newItemId, tokenURI);
+        NFTList.push(token({Name: _name, URI: _URI, index: mintIndex}));
+        balance[msg.sender].push(mintIndex);
         // emit returnTokenId(newItemId);
         return newItemId;
     }
@@ -32,10 +38,17 @@ contract NFTManager is ERC721URIStorage {
     function getAddr() view public returns (address){
         return address(this);
     }
-
+    function getUserNFTs() public view returns (uint256[] memory) {
+        return balance[msg.sender];
+    }
     function transferNFTFrom(address from, address to, uint256 tokenId) public virtual returns (bool) {
-        safeTransferFrom(from, to, tokenId);
-        return true;
+        if (ownerOf(tokenId) == msg.sender) {
+            safeTransferFrom(msg.sender, to, tokenId);
+            return true;
+        } else {
+            revert("Transfer Not Successful - unknown");
+            return false;
+        }
     }
 
 }
