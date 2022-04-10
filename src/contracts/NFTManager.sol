@@ -10,6 +10,13 @@ contract NFTManager is ERC721URIStorage {
     event returnTokenId(
         uint256 _tokenId
     );
+
+    struct token{
+        string Name;
+        string URI;
+        uint index;
+    }
+
     using Counters for Counters.Counter; 
     Counters.Counter private _tokenIds;
 
@@ -20,14 +27,14 @@ contract NFTManager is ERC721URIStorage {
 
     mapping(address => uint256[]) private balance;
 
-    function createToken(string memory tokenURI) public returns (uint256) {
+    function createToken(string memory tokenURI, string memory _Name) public returns (uint256) {
         uint256 oldItemId = _tokenIds.current();
         _tokenIds.increment();
         uint256 newItemId = _tokenIds.current();
         require(newItemId == oldItemId + 1, "not incrementing");
         _mint(msg.sender, newItemId);
         _setTokenURI(newItemId, tokenURI);
-        NFTList.push(token({Name: _name, URI: _URI, index: mintIndex}));
+        NFTList.push(token({Name: _Name, URI: tokenURI, index: newItemId}));
         balance[msg.sender].push(mintIndex);
         // emit returnTokenId(newItemId);
         return newItemId;
