@@ -25,7 +25,7 @@ contract('NFTMarketplace', (accounts) => {
       
       const token_URI_1 = "https://ipfs.io/ipfs/Qmd9MCGtdVz2miNumBHDbvj8bigSgTwnr4SbyH6DNnpWdt?filename=1-PUG.json"
       // somehow token_id_1 returned is not an int.
-      await nft_contract.createToken(token_URI_1,{from:accounts[0]})
+      await nft_contract.createToken(token_URI_1,'NFT 1',{from:accounts[0]})
       //console.log(token_id_1)
       const token_id_1 = await nft_contract.getLatestId()
       assert.equal(token_id_1, 1)
@@ -39,9 +39,9 @@ contract('NFTMarketplace', (accounts) => {
         assert.equal(isContract,true)
     })
     it('checking Lock NFT function', async () =>{
+        await nft_contract.approve(market_contract.address,1,{from:accounts[0]})
         await market_contract.lockNFT(nft_contract.address,1,{from:accounts[0]})
         //give permission
-        await nft_contract.approve(market_contract.address,1,{from:accounts[0]})
         const owner = await nft_contract.ownerOf(1)
         assert.equal(owner,market_contract.address)
     })
