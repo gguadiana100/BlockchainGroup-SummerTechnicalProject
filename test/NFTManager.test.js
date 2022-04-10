@@ -21,7 +21,7 @@ contract('NFTManager', (accounts) => {
     })
     it('should match first account on ganache', async () => {
       // change to your own acc on ganache
-      assert.equal(accounts[0], "0x1C0F8C3a25414430BdC28E903B619F7bfb4f8a69")
+      assert.equal(accounts[0], "0xB65BBb64B477bE651Ae9Dcb6D89BCE761731bA8F")
     })
     it('should match the name and symbol', async () => {
       const contract_name = await contract.name.call()
