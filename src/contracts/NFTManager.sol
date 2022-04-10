@@ -35,7 +35,7 @@ contract NFTManager is ERC721URIStorage {
         _mint(msg.sender, newItemId);
         _setTokenURI(newItemId, tokenURI);
         NFTList.push(token({Name: _Name, URI: tokenURI, index: newItemId}));
-        balance[msg.sender].push(mintIndex);
+        balance[msg.sender].push(newItemId);
         // emit returnTokenId(newItemId);
         return newItemId;
     }
@@ -54,7 +54,7 @@ contract NFTManager is ERC721URIStorage {
             return true;
         } else {
             revert("Transfer Not Successful - unknown");
-            return false;
+            
         }
     }
 
