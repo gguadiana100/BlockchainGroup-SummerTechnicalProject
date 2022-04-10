@@ -56,6 +56,7 @@ contract NFTManager is ERC721URIStorage {
             revert("Transfer Not Successful - unknown");
             
         }
+      
     }
 
 }
