@@ -49,17 +49,8 @@ contract NFTManager is ERC721URIStorage {
         return balance[msg.sender];
     }
     function transferNFTFrom(address from, address to, uint256 tokenId) public virtual returns (bool) {
-<<<<<<< HEAD
-<<<<<<< HEAD
         if (ownerOf(tokenId) == from) {
             safeTransferFrom(from, to, tokenId);
-=======
-=======
->>>>>>> d64c0f595507ee4f3478a4dec1c1e678f3d8f5f8
-        // safeTransferFrom(from, to, tokenId);
-        if (ownerOf(tokenId) == from) {
-            safeTransferFrom(msg.sender, to, tokenId);
->>>>>>> d64c0f595507ee4f3478a4dec1c1e678f3d8f5f8
             return true;
         } else {
             revert("Transfer Not Successful - unknown");
