@@ -9,6 +9,7 @@ require('chai')
   .use(require('chai-as-promised'))
   .should()
 
+
 contract('NFTManager', (accounts) => {
 
   describe('start testing', async () => {
@@ -16,10 +17,11 @@ contract('NFTManager', (accounts) => {
     let contractB
     before(async () => {
       contract = await NFTManager.deployed()
+      contractA = await NFTManager.deployed()
     })
     it('should match first account on ganache', async () => {
       // change to your own acc on ganache
-      assert.equal(accounts[0], "0xa507B5DE7371737622E9AB164b64A88Cd012d681")
+      assert.equal(accounts[0], "0x1C0F8C3a25414430BdC28E903B619F7bfb4f8a69")
     })
     it('should match the name and symbol', async () => {
       const contract_name = await contract.name.call()

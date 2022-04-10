@@ -1,29 +1,29 @@
 {
   "contractName": "BlindAuction",
   "abi": [],
-  "metadata": "{\"compiler\":{\"version\":\"0.8.4+commit.c7e474f2\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"project:/src/contracts/BlindAuction.sol\":\"BlindAuction\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"project:/src/contracts/BlindAuction.sol\":{\"keccak256\":\"0xaa1ad38d526edc9492daaa7f770d7bcb07519076f7a090b11aae77c9a700fb20\",\"license\":\"GPL-3.0\",\"urls\":[\"bzz-raw://fc0281211edc0433f55ae4e04e29d6db2fa93d787eb1d5883d1048ae611403d6\",\"dweb:/ipfs/QmcijS5R94tPwLNwemR9UyWWYGXEq4DpwvuNbzA3PAWYkm\"]}},\"version\":1}",
-  "bytecode": "0x6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea2646970667358221220e046df76c5f8ca2ff3491ce1b0f35ff843fff2241105b3dca471b836f141d2e164736f6c63430008040033",
-  "deployedBytecode": "0x6080604052600080fdfea2646970667358221220e046df76c5f8ca2ff3491ce1b0f35ff843fff2241105b3dca471b836f141d2e164736f6c63430008040033",
+  "metadata": "{\"compiler\":{\"version\":\"0.8.4+commit.c7e474f2\"},\"language\":\"Solidity\",\"output\":{\"abi\":[],\"devdoc\":{\"kind\":\"dev\",\"methods\":{},\"version\":1},\"userdoc\":{\"kind\":\"user\",\"methods\":{},\"version\":1}},\"settings\":{\"compilationTarget\":{\"/Users/zeningluo/Documents/GitHub/BlockchainGroup-2022Technical-Project/src/contracts/BlindAuction.sol\":\"BlindAuction\"},\"evmVersion\":\"istanbul\",\"libraries\":{},\"metadata\":{\"bytecodeHash\":\"ipfs\"},\"optimizer\":{\"enabled\":false,\"runs\":200},\"remappings\":[]},\"sources\":{\"/Users/zeningluo/Documents/GitHub/BlockchainGroup-2022Technical-Project/src/contracts/BlindAuction.sol\":{\"keccak256\":\"0xaa1ad38d526edc9492daaa7f770d7bcb07519076f7a090b11aae77c9a700fb20\",\"license\":\"GPL-3.0\",\"urls\":[\"bzz-raw://fc0281211edc0433f55ae4e04e29d6db2fa93d787eb1d5883d1048ae611403d6\",\"dweb:/ipfs/QmcijS5R94tPwLNwemR9UyWWYGXEq4DpwvuNbzA3PAWYkm\"]}},\"version\":1}",
+  "bytecode": "0x6080604052348015600f57600080fd5b50603f80601d6000396000f3fe6080604052600080fdfea2646970667358221220ed78cd5ba4315aeb4becc976f8c135e9190b9c7c90030e86972f0181c1e8336664736f6c63430008040033",
+  "deployedBytecode": "0x6080604052600080fdfea2646970667358221220ed78cd5ba4315aeb4becc976f8c135e9190b9c7c90030e86972f0181c1e8336664736f6c63430008040033",
   "immutableReferences": {},
   "generatedSources": [],
   "deployedGeneratedSources": [],
-  "sourceMap": "60:30:14:-:0;;;;;;;;;;;;;;;;;;;",
-  "deployedSourceMap": "60:30:14:-:0;;;;;",
+  "sourceMap": "60:30:0:-:0;;;;;;;;;;;;;;;;;;;",
+  "deployedSourceMap": "60:30:0:-:0;;;;;",
   "source": "// SPDX-License-Identifier: GPL-3.0\npragma solidity ^0.8.4;\ncontract BlindAuction {\n    \n}\n",
-  "sourcePath": "/Users/peter/Desktop/BlockchainGroup/src/contracts/BlindAuction.sol",
+  "sourcePath": "/Users/zeningluo/Documents/GitHub/BlockchainGroup-2022Technical-Project/src/contracts/BlindAuction.sol",
   "ast": {
-    "absolutePath": "project:/src/contracts/BlindAuction.sol",
+    "absolutePath": "/Users/zeningluo/Documents/GitHub/BlockchainGroup-2022Technical-Project/src/contracts/BlindAuction.sol",
     "exportedSymbols": {
       "BlindAuction": [
-        4972
+        2
       ]
     },
-    "id": 4973,
+    "id": 3,
     "license": "GPL-3.0",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 4971,
+        "id": 1,
         "literals": [
           "solidity",
           "^",
@@ -31,7 +31,7 @@
           ".4"
         ],
         "nodeType": "PragmaDirective",
-        "src": "36:23:14"
+        "src": "36:23:0"
       },
       {
         "abstract": false,
@@ -39,34 +39,34 @@
         "contractDependencies": [],
         "contractKind": "contract",
         "fullyImplemented": true,
-        "id": 4972,
+        "id": 2,
         "linearizedBaseContracts": [
-          4972
+          2
         ],
         "name": "BlindAuction",
-        "nameLocation": "69:12:14",
+        "nameLocation": "69:12:0",
         "nodeType": "ContractDefinition",
         "nodes": [],
-        "scope": 4973,
-        "src": "60:30:14",
+        "scope": 3,
+        "src": "60:30:0",
         "usedErrors": []
       }
     ],
-    "src": "36:55:14"
+    "src": "36:55:0"
   },
   "legacyAST": {
-    "absolutePath": "project:/src/contracts/BlindAuction.sol",
+    "absolutePath": "/Users/zeningluo/Documents/GitHub/BlockchainGroup-2022Technical-Project/src/contracts/BlindAuction.sol",
     "exportedSymbols": {
       "BlindAuction": [
-        4972
+        2
       ]
     },
-    "id": 4973,
+    "id": 3,
     "license": "GPL-3.0",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 4971,
+        "id": 1,
         "literals": [
           "solidity",
           "^",
@@ -74,7 +74,7 @@
           ".4"
         ],
         "nodeType": "PragmaDirective",
-        "src": "36:23:14"
+        "src": "36:23:0"
       },
       {
         "abstract": false,
@@ -82,28 +82,28 @@
         "contractDependencies": [],
         "contractKind": "contract",
         "fullyImplemented": true,
-        "id": 4972,
+        "id": 2,
         "linearizedBaseContracts": [
-          4972
+          2
         ],
         "name": "BlindAuction",
-        "nameLocation": "69:12:14",
+        "nameLocation": "69:12:0",
         "nodeType": "ContractDefinition",
         "nodes": [],
-        "scope": 4973,
-        "src": "60:30:14",
+        "scope": 3,
+        "src": "60:30:0",
         "usedErrors": []
       }
     ],
-    "src": "36:55:14"
+    "src": "36:55:0"
   },
   "compiler": {
     "name": "solc",
     "version": "0.8.4+commit.c7e474f2.Emscripten.clang"
   },
   "networks": {},
-  "schemaVersion": "3.4.4",
-  "updatedAt": "2022-02-06T21:52:38.629Z",
+  "schemaVersion": "3.3.1",
+  "updatedAt": "2022-04-10T19:37:04.700Z",
   "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",
