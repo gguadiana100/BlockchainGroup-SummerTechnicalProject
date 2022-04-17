@@ -74,7 +74,7 @@ contract P2PLoan {
   // NFT seized by lender
   event LoanDefault(uint id, address caller);
   // console.Log for debuggin in soliditiy 
-  event consoleLog(string s);
+  event consoleLog(string msg, uint num);
 
   // ============ Modifiers ============
 
@@ -133,9 +133,6 @@ contract P2PLoan {
     userBorrow[_loan.borrower].push(numOfLoans);
     userLend[_loan.lender].push(numOfLoans);
 
-    // execute transaction
-    // auction contract takes cares of this
-
     // adjust nums of loans according and emit event
     numOfLoans = SafeMath.add(numOfLoans, 1);
     uint index = SafeMath.sub(numOfLoans, 1);
@@ -168,13 +165,20 @@ contract P2PLoan {
     require(loan.loanCompleteTimeStamp >= block.timestamp, "Can't repay expired loan.");
     // must be borrower to repay loan
     require(loan.borrower == msg.sender, "only borrower can repay loan");
+    // must pay in full
+    require(msg.value >= loan.totalAmountDue, "Must pay in full.");
+    emit consoleLog("msg value", msg.value);
 
-    // transfer nft back to owner
+    // pay borrower
+    // loan.borrower.transfer(loan.totalAmountDue);    
+
+    // transfer nft back to lender
 
     // change loan status to ended
-
+    loan.status = Status.ENDED;
+    
     // Emit repayment event 
-    emit LoanRepayed(_loanID, msg.sender);
+    // emit LoanRepayed(_loanID, msg.sender);
   }
 
   /**
@@ -186,10 +190,12 @@ contract P2PLoan {
     require(loan.status == Status.ACTIVE, "Can't default paid or already defaulted loan.");
     // Prevent repaying loan after expiry
     require(loan.loanCompleteTimeStamp < block.timestamp, "Can't default active loans.");
+    // must be lender to default loan
+    require(loan.lender == msg.sender, "only lender can default loan");
 
+    // call nft function to transfer NFT to borrower
 
-    // call nft function
-
+    loan.status = Status.DEFAULTED;
     // Emit seize event
     emit LoanDefault(_loanID, msg.sender);
   }
