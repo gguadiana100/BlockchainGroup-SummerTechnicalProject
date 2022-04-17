@@ -33,7 +33,7 @@ contract('NFTManager', (accounts) => {
       
       const token_URI_1 = "https://ipfs.io/ipfs/Qmd9MCGtdVz2miNumBHDbvj8bigSgTwnr4SbyH6DNnpWdt?filename=1-PUG.json"
       // somehow token_id_1 returned is not an int.
-      await contract.createToken(token_URI_1,{from:accounts[0]})
+      await contract.createToken(token_URI_1,'NFT1',{from:accounts[0]})
       //console.log(token_id_1)
       const token_id_1 = await contract.getLatestId()
       assert.equal(token_id_1, 1)
@@ -44,7 +44,7 @@ contract('NFTManager', (accounts) => {
     })
     it('create 2nd token', async () => {
       const token_URI_2 = "https://ipfs.io/ipfs/Qmd9MCGtdVz2miNumBHDbvj8bigSgTwnr4SbyH6DNnpWd"
-      await contract.createToken(token_URI_2,{from:accounts[1]})
+      await contract.createToken(token_URI_2,'NFT2',{from:accounts[1]})
       const token_id_2 = await contract.getLatestId()
       assert.equal(token_id_2, 2)
       const requested_uri = await contract.tokenURI(token_id_2)
