@@ -54,7 +54,25 @@ contract('NFTMarketplace', (accounts) => {
         const ownerNew = await nft_contract.ownerOf(1)
         assert.equal(ownerNew,accounts[0])
     })
+    it('checking Lock NFT function two tokens', async () =>{
+      await nft_contract.approve(market_contract.address,1,{from:accounts[0]})
+      await market_contract.lockNFT(nft_contract.address,1,{from:accounts[0]})
+      await nft_contract.approve(market_contract.address,2,{from:accounts[1]})
+      await market_contract.lockNFT(nft_contract.address,2,{from:accounts[1]})
 
+      const owner_1 = await nft_contract.ownerOf(1)
+      assert.equal(owner_1,market_contract.address)
+      const owner_2 = await nft_contract.ownerOf(2)
+      assert.equal(owner_2,market_contract.address)
+
+      await market_contract.unlockNFT(nft_contract.address,1,accounts[0])
+      const ownerNew_1 = await nft_contract.ownerOf(1)
+      assert.equal(ownerNew_1,accounts[0])
+
+      await market_contract.unlockNFT(nft_contract.address,2,accounts[1])
+      const ownerNew_2 = await nft_contract.ownerOf(2)
+      assert.equal(ownerNew_2,accounts[1])
+  })
 
   })
 })
