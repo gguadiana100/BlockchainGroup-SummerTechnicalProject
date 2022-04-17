@@ -170,7 +170,7 @@ contract P2PLoan {
     emit consoleLog("msg value", msg.value);
 
     // pay borrower
-    // loan.borrower.transfer(loan.totalAmountDue);    
+    loan.borrower.transfer(loan.totalAmountDue);    
 
     // transfer nft back to lender
 
@@ -178,7 +178,7 @@ contract P2PLoan {
     loan.status = Status.ENDED;
     
     // Emit repayment event 
-    // emit LoanRepayed(_loanID, msg.sender);
+    emit LoanRepayed(_loanID, msg.sender);
   }
 
   /**

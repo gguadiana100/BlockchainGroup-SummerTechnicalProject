@@ -41,64 +41,63 @@ require('chai')
 contract('P2PLoan', (accounts) => {
   let contract
 
-  // describe('deployment', async () => {
-  //   before(async () => {
-  //     contract = await P2PLoan.deployed()
-  //   })
+  describe('deployment', async () => {
+    before(async () => {
+      contract = await P2PLoan.deployed()
+    })
 
-  //   it('should read first account on ganache', async () => {
-  //     // change to your own acc on ganache
-  //     assert.equal(accounts[0], acc1, "contract not deployed correctly")
-  //   })
-  // })
+    it('should read first account on ganache', async () => {
+      // change to your own acc on ganache
+      assert.equal(accounts[0], acc1, "contract not deployed correctly")
+    })
+  })
 
-  // describe('create loan', async () => {
-  //   before(async () => {
-  //     contract = await P2PLoan.deployed()
-  //   })
+  describe('create loan', async () => {
+    before(async () => {
+      contract = await P2PLoan.deployed()
+    })
 
-  //   it('should increase numOfLoans', async () => {
-  //       // creates a new loan
-  //     const args = new loanArgs(
-  //       accounts[0], // lender address
-  //       accounts[1], // borrower address
-  //       0, // token id
-  //       accounts[2], // token address
-  //       100, // loan amount
-  //       2,  // monthly interest rate 
-  //       30, // loan duration in days
-  //     );
-  //     await contract.createLoan.sendTransaction(
-  //       args, { from: accounts[0], gas:3000000} // sent from the lender
-  //     );
+    it('should increase numOfLoans', async () => {
+        // creates a new loan
+      const args = new loanArgs(
+        accounts[0], // lender address
+        accounts[1], // borrower address
+        0, // token id
+        accounts[2], // token address
+        100, // loan amount
+        2,  // monthly interest rate 
+        30, // loan duration in days
+      );
+      await contract.createLoan.sendTransaction(
+        args, { from: accounts[0], gas:3000000} // sent from the lender
+      );
 
-  //     const n = await contract.numOfLoans.call();
-  //     assert.equal(n.toNumber(), 1, "numOfLoan not at 1")
-  //   })
+      const n = await contract.numOfLoans.call();
+      assert.equal(n.toNumber(), 1, "numOfLoan not at 1")
+    })
 
-  //   it('should populate allLoans with correct data', async () => {
-  //     const loan = await contract.getLoan.call(0);
-  //     assert.equal(loan.loanID, 0, "loanID incorrect")
-  //     assert.equal(loan.lender, accounts[0], "lender address incorrect")
-  //     assert.equal(loan.borrower, accounts[1], "borrower address incorrect")
-  //     assert.equal(loan.NFTtokenID, 0, "TokenID incorrect")
-  //     assert.equal(loan.NFTtokenAddress, accounts[2], "token address incorrect")
-  //     assert.equal(loan.loanAmount, 100, "loan amount incorrect")
-  //     assert.equal(loan.totalAmountDue, 102, "loan amount due incorrect")
-  //     assert.equal(loan.interestRate, 2, "loan interest incorrect")
-  //     assert.equal(loan.loanDuration, 30, "duration incorrect")
-  //     assert.equal(loan.status, 0, "status incorrect")
-  //   })
+    it('should populate allLoans with correct data', async () => {
+      const loan = await contract.getLoan.call(0);
+      assert.equal(loan.loanID, 0, "loanID incorrect")
+      assert.equal(loan.lender, accounts[0], "lender address incorrect")
+      assert.equal(loan.borrower, accounts[1], "borrower address incorrect")
+      assert.equal(loan.NFTtokenID, 0, "TokenID incorrect")
+      assert.equal(loan.NFTtokenAddress, accounts[2], "token address incorrect")
+      assert.equal(loan.loanAmount, 100, "loan amount incorrect")
+      assert.equal(loan.totalAmountDue, 102, "loan amount due incorrect")
+      assert.equal(loan.interestRate, 2, "loan interest incorrect")
+      assert.equal(loan.loanDuration, 30, "duration incorrect")
+      assert.equal(loan.status, 0, "status incorrect")
+    })
 
-  //   it('should calculate completeTimeStamp', async () => {
-  //     const loan = await contract.getLoan.call(0);
-  //     const startTime = Number(loan.loanCreatedTimeStamp)
-  //     const endTime = startTime + loan.loanDuration * 86400
+    it('should calculate completeTimeStamp', async () => {
+      const loan = await contract.getLoan.call(0);
+      const startTime = Number(loan.loanCreatedTimeStamp)
+      const endTime = startTime + loan.loanDuration * 86400
 
-  //     assert.equal(loan.loanCompleteTimeStamp, endTime, "complete time stamp incorrect")
-  //   })
-  // })
-
+      assert.equal(loan.loanCompleteTimeStamp, endTime, "complete time stamp incorrect")
+    })
+  })
   
   describe('repay loan', async () => {
     before(async () => {
@@ -133,6 +132,42 @@ contract('P2PLoan', (accounts) => {
       // const finalBalance = await contract.getBalance.call(accounts[1])
 
       assert.equal(loan.status, 1, "status incorrect")
+      // assert.equal(finalBalance - initialBalance > 10.2, true, "balance incorrect")
+    })
+  })
+
+  describe('default loan', async () => {
+    before(async () => {
+      contract = await P2PLoan.deployed()
+    })
+
+    it('should repay loan', async () => {
+      const args = new loanArgs(
+        accounts[0], // lender address
+        accounts[1], // borrower address
+        0, // token id
+        accounts[2], // token address
+        2, // loan amount
+        50,  // monthly interest rate 
+        30, // loan duration in days
+      );
+  
+      await contract.createLoan.sendTransaction(
+        args, { from: accounts[0], gas:30000000} 
+      );
+      // const initialBalance = await contract.getBalance.call(accounts[1])
+
+      await contract.loanDefaulted.sendTransaction(
+        0, 
+        { from: accounts[1], 
+          gas:30000000000}
+      );
+      
+      const loan = await contract.getLoan.call(0);
+
+      // const finalBalance = await contract.getBalance.call(accounts[1])
+
+      assert.equal(loan.status, 2, "status incorrect")
       // assert.equal(finalBalance - initialBalance > 10.2, true, "balance incorrect")
     })
   })
