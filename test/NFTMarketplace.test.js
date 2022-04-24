@@ -55,6 +55,8 @@ contract('NFTMarketplace', (accounts) => {
         assert.equal(ownerNew,accounts[0])
     })
     it('checking Lock NFT function two tokens', async () =>{
+      const token_URI_2 = "https://ipfs.io/ipfs/Qmd9MCGtdVz2miNumBHDbvj8bigSgTwnr4SbyH6DNnpWdt?filename=1-PUG.json"
+      await nft_contract.createToken(token_URI_2,'NFT 2',{from:accounts[1]})
       await nft_contract.approve(market_contract.address,1,{from:accounts[0]})
       await market_contract.lockNFT(nft_contract.address,1,{from:accounts[0]})
       await nft_contract.approve(market_contract.address,2,{from:accounts[1]})
