@@ -1,6 +1,6 @@
 const { assert } = require('chai');
 require('dotenv').config();
-const Web3 = require('web3');
+const web3 = require('web3');
 
 function makeStruct(names) {
   var names = names.split(' ');
@@ -16,10 +16,6 @@ function makeStruct(names) {
 var loanArgs = makeStruct(
   "lender borrower NFTtokenID NFTtokenAddress loanAmount interestRate loanDuration"
 );
-
-function getRandomInt(max) {
-  return Math.floor(Math.random() * max);
-}
 
 /* commands
   truffle test ./test/P2PLoan.test.js
@@ -53,10 +49,6 @@ contract('P2PLoan', (accounts) => {
   })
 
   describe('create loan', async () => {
-    before(async () => {
-      contract = await P2PLoan.deployed()
-    })
-
     it('should increase numOfLoans', async () => {
         // creates a new loan
       const args = new loanArgs(
@@ -68,6 +60,7 @@ contract('P2PLoan', (accounts) => {
         2,  // monthly interest rate 
         30, // loan duration in days
       );
+
       await contract.createLoan.sendTransaction(
         args, { from: accounts[0], gas:3000000} // sent from the lender
       );
@@ -97,79 +90,104 @@ contract('P2PLoan', (accounts) => {
 
       assert.equal(loan.loanCompleteTimeStamp, endTime, "complete time stamp incorrect")
     })
+
+    it('should calculate totalAmountDue', async () => {
+      const loan = await contract.getLoan.call(0);
+      const totalAmountDue = Number(loan.totalAmountDue)
+      assert.equal(totalAmountDue, 102, "total amount due incorrect")
+    })
   })
   
   describe('repay loan', async () => {
-    before(async () => {
-      contract = await P2PLoan.deployed()
-    })
-
-    it('should repay loan', async () => {
+    it('loan status changed', async () => {
+      // creates a new loan
       const args = new loanArgs(
-        accounts[0], // lender address
-        accounts[1], // borrower address
+        accounts[2], // lender address
+        accounts[9], // borrower address
         0, // token id
-        accounts[2], // token address
-        2, // loan amount
-        50,  // monthly interest rate 
+        accounts[4], // token address
+        1, // loan amount
+        100,  // monthly interest rate 
         30, // loan duration in days
       );
-  
       await contract.createLoan.sendTransaction(
-        args, { from: accounts[0], gas:30000000} 
+        args, { from: accounts[0], gas:3000000} // sent from the lender
       );
-      // const initialBalance = await contract.getBalance.call(accounts[1])
 
       await contract.repayLoan.sendTransaction(
-        0, 
-        { from: accounts[1], 
-          value: Web3.utils.toWei(1, "ether"), 
-          gas:30000000000}
-      );
-      
-      const loan = await contract.getLoan.call(0);
+          1, 
+          { 
+            from: accounts[9], 
+            value: 2,
+            gas:3000000
+          }
+        );
 
-      // const finalBalance = await contract.getBalance.call(accounts[1])
-
+      const loan = await contract.getLoan.call(1);
       assert.equal(loan.status, 1, "status incorrect")
-      // assert.equal(finalBalance - initialBalance > 10.2, true, "balance incorrect")
-    })
-  })
-
-  describe('default loan', async () => {
-    before(async () => {
-      contract = await P2PLoan.deployed()
     })
 
-    it('should repay loan', async () => {
-      const args = new loanArgs(
-        accounts[0], // lender address
-        accounts[1], // borrower address
-        0, // token id
-        accounts[2], // token address
-        2, // loan amount
-        50,  // monthly interest rate 
-        30, // loan duration in days
+  it('balance changed', async () => {
+    // creates a new loan
+    const args = new loanArgs(
+      accounts[2], // lender address
+      accounts[8], // borrower address
+      0, // token id
+      accounts[4], // token address
+      1, // loan amount
+      100,  // monthly interest rate 
+      30, // loan duration in days
+    );
+
+    await contract.createLoan.sendTransaction(
+      args, { from: accounts[0], gas:3000000} // sent from the lender
+    );
+
+    const initBalance = await web3.eth.getBalance(accounts[8])
+
+    await contract.repayLoan.sendTransaction(
+        1,  // loan id
+        { 
+          from: accounts[8], 
+          value: 2, // sending in transaction with value of 1 eth
+          gas:3000000
+        }
       );
+    
+    const finalBalance = await web3.eth.getBalance(accounts[8])
+    assert.equal(finalBalance - initBalance == 2, true, "borrower balance not changed")
+})
+
+    // it('should repay loan', async () => {
+    //   const args = new loanArgs(
+    //     accounts[0], // lender address
+    //     accounts[1], // borrower address
+    //     0, // token id
+    //     accounts[2], // token address
+    //     2, // loan amount
+    //     50,  // monthly interest rate 
+    //     30, // loan duration in days
+    //   );
   
-      await contract.createLoan.sendTransaction(
-        args, { from: accounts[0], gas:30000000} 
-      );
-      // const initialBalance = await contract.getBalance.call(accounts[1])
+    //   await contract.createLoan.sendTransaction(
+    //     args, { from: accounts[9], gas:300000000000} 
+    //   );
+    //   // const initialBalance = await contract.getBalance.call(accounts[1])
 
-      await contract.loanDefaulted.sendTransaction(
-        0, 
-        { from: accounts[1], 
-          gas:30000000000}
-      );
+    //   // await contract.repayLoan.sendTransaction(
+    //   //   0, 
+    //   //   { from: accounts[1], 
+    //   //     value: Web3.utils.toWei(1, "ether"), 
+    //   //     gas:3000000000000}
+    //   // );
       
-      const loan = await contract.getLoan.call(0);
+    //   // const loan = await contract.getLoan.call(0);
 
-      // const finalBalance = await contract.getBalance.call(accounts[1])
+    //   // const finalBalance = await contract.getBalance.call(accounts[1])
 
-      assert.equal(loan.status, 2, "status incorrect")
-      // assert.equal(finalBalance - initialBalance > 10.2, true, "balance incorrect")
-    })
+    //   // assert.equal(loan.status, 1, "status incorrect")
+    //   // assert.equal(finalBalance - initialBalance > 10.2, true, "balance incorrect")
+    // })
   })
 
 

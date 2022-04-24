@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "abdk-libraries-solidity/ABDKMath64x64.sol";
+// import "./NFTMarketplace.sol";
 
 contract P2PLoan {
   // ============ Structs ============
@@ -45,7 +46,7 @@ contract P2PLoan {
   // total number of loans created
   uint public numOfLoans;
   // map from loanID to loan instances
-  Loan[] public allLoans;
+  mapping(uint => Loan) public allLoans;
   // map userID to loans on borrow
   mapping(address => uint[]) public userBorrow; 
   // map user to loans on lend
@@ -94,12 +95,10 @@ contract P2PLoan {
    */
   function createLoan(loanArgs memory _loan) external returns(uint _numOfLoans) {
  
-    require(_loan.interestRate < 100, "Interest must be lower than 100%.");
+    require(_loan.interestRate <= 100, "Interest must be lower than 100%.");
     require(_loan.loanDuration > 0, "Can't create loan in past");
-    require(_loan.loanDuration < 360, "Max loan period is 12 months/360 days");
+    require(_loan.loanDuration <= 360, "Max loan period is 12 months/360 days");
     require(_loan.loanDuration % 30 == 0, "loan period must be in 30 day intervals");
-
-    //TODO: async await for NFT transfer from NFt contract here
 
     uint durationInUnix = SafeMath.mul(_loan.loanDuration, 86400);
     uint _loanCompleteTimeStamp = SafeMath.add(durationInUnix, block.timestamp);
@@ -114,7 +113,7 @@ contract P2PLoan {
     uint _totalAmountDue = SafeMath.add(unsignedRealInterestDue, _loan.loanAmount);
 
     // add loan to allLoans array 
-    allLoans.push(Loan({
+    allLoans[numOfLoans] = Loan({
       loanID: numOfLoans,
       lender: payable(_loan.lender),
       borrower: payable(_loan.borrower),
@@ -127,7 +126,7 @@ contract P2PLoan {
       loanDuration: _loan.loanDuration,
       loanCompleteTimeStamp: _loanCompleteTimeStamp,
       status: Status.ACTIVE
-    }));
+    });
 
     // store loan id in user arrays for easier read access
     userBorrow[_loan.borrower].push(numOfLoans);
@@ -157,8 +156,10 @@ contract P2PLoan {
   /**
     Enables lender to reclaim NFt by paying borrower (always pay in full)
    */
-  function repayLoan(uint _loanID) external payable isValidLoanID(_loanID){
+  function repayLoan(uint _loanID) external payable{
+    // emit consoleLog("msg value", msg.value);
     Loan storage loan = allLoans[_loanID];
+    // emit consoleLog("hi", msg.value);
     // Prevent repaying repaid loan
     require(loan.status == Status.ACTIVE, "Can't repay paid or defaulted loan.");
     // Prevent repaying loan after expiry
@@ -167,12 +168,14 @@ contract P2PLoan {
     require(loan.borrower == msg.sender, "only borrower can repay loan");
     // must pay in full
     require(msg.value >= loan.totalAmountDue, "Must pay in full.");
-    emit consoleLog("msg value", msg.value);
+    
 
     // pay borrower
     loan.borrower.transfer(loan.totalAmountDue);    
 
-    // transfer nft back to lender
+    //TODO: NFT transfer from NFt contract here
+    // NFTManager nftManager = NFTManager(NFTtokenAddress);
+    // NFTManager.unlockNFT(NFTtokenAddress, NFTtokenID, loan.borrower);
 
     // change loan status to ended
     loan.status = Status.ENDED;
@@ -184,7 +187,7 @@ contract P2PLoan {
   /**
     Allows borrowers to seize nft if loan not paid on time
    */
-  function loanDefaulted(uint256 _loanID) external {
+  function loanDefaulted(uint256 _loanID) external isValidLoanID(_loanID){
     Loan storage loan = allLoans[_loanID];
     // Prevent repaying repaid loan
     require(loan.status == Status.ACTIVE, "Can't default paid or already defaulted loan.");
@@ -193,7 +196,9 @@ contract P2PLoan {
     // must be lender to default loan
     require(loan.lender == msg.sender, "only lender can default loan");
 
-    // call nft function to transfer NFT to borrower
+    // TODO: NFT transfer from NFt contract here
+    // NFTManager nftManager = NFTManager(NFTtokenAddress);
+    // NFTManager.unlockNFT(NFTtokenAddress, NFTtokenID, loan.lender);
 
     loan.status = Status.DEFAULTED;
     // Emit seize event
@@ -204,7 +209,7 @@ contract P2PLoan {
    /**
       read functions for frontend
    */
-  function getLoan(uint _loanID) external view returns(Loan memory) {
+  function getLoan(uint _loanID) external isValidLoanID(_loanID) view returns(Loan memory){
     return allLoans[_loanID];
   }
 
