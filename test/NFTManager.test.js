@@ -50,9 +50,9 @@ contract('NFTManager', (accounts) => {
     })
     it('transfer token', async () => {
       await contract.safeTransferFrom(accounts[0], accounts[1], 1, {from: accounts[0]})
-      const owner_1= await contract.ownerOf(1) // should now be accounts[1]
+      const owner_1 = await contract.ownerOf(1) // should now be accounts[1]
       assert.equal(accounts[1], owner_1)
-      const owner_2= await contract.ownerOf(2)
+      const owner_2 = await contract.ownerOf(2)
       assert.equal(accounts[1], owner_2)
       const account1_balance = await contract.balanceOf(accounts[1])
       assert.equal(account1_balance, 2)
@@ -60,9 +60,12 @@ contract('NFTManager', (accounts) => {
       assert.equal(account0_balance, 0)
     })
 
-  })
+    it('burn token', async () => {
+      const owner_1 = await contract.ownerOf(1)
+      assert.equal(owner_1, accounts[1])
+      await contract.burnNFT(1, owner_1)
+      var exist = await contract.existNFT(1)
+      assert.equal(exist, false)
+    })
 })
-
-// Here we shouw that contract A and contract B lead to the same address. 
-// Work on sepreating those two into two different wallet addresses.
-// Peter Feb/13
+})
