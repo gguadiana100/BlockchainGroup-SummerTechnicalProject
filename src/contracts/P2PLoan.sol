@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.3;
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+// import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 // import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
+// import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "abdk-libraries-solidity/ABDKMath64x64.sol";
-// import "./NFTMarketplace.sol";
+import "./NFTMarketplace.sol";
 
 contract P2PLoan {
+  
   // ============ Structs ============
 
   // attaches SafeMath lib to uint datatype
@@ -51,6 +52,8 @@ contract P2PLoan {
   mapping(address => uint[]) public userBorrow; 
   // map user to loans on lend
   mapping(address => uint[]) public userLend; 
+  // owner of the contract
+  address public owner;
 
 
   // ============ Events ============
@@ -71,9 +74,11 @@ contract P2PLoan {
   // Loan drawn by NFT owner
   event LoanDrawn(uint id, address lender, uint amountDrawn);
   // Loan repayed by address
-  event LoanRepayed(uint id, address repayer);
+  event LoanRepayed(uint id, address repayer, uint amountRepayed);
   // NFT seized by lender
   event LoanDefault(uint id, address caller);
+  // logging address
+  event logAddress(address caller);
   // console.Log for debuggin in soliditiy 
   event consoleLog(string msg, uint num);
 
@@ -87,6 +92,20 @@ contract P2PLoan {
           );
           _;
       }
+  
+  modifier onlyManager() { // Modifier
+        require(
+            msg.sender == owner,
+            "Only leasing manager can call this."
+        );
+        _;
+    }
+
+  constructor() public {
+      owner = msg.sender;
+      numOfLoans = 0;
+      emit logAddress(msg.sender);
+  }
 
   // ============ Functions ============
 
@@ -156,7 +175,7 @@ contract P2PLoan {
   /**
     Enables lender to reclaim NFt by paying borrower (always pay in full)
    */
-  function repayLoan(uint _loanID) external payable{
+  function repayLoan(uint _loanID) external payable {
     // emit consoleLog("msg value", msg.value);
     Loan storage loan = allLoans[_loanID];
     // emit consoleLog("hi", msg.value);
@@ -168,20 +187,18 @@ contract P2PLoan {
     require(loan.borrower == msg.sender, "only borrower can repay loan");
     // must pay in full
     require(msg.value >= loan.totalAmountDue, "Must pay in full.");
-    
 
     // pay borrower
-    loan.borrower.transfer(loan.totalAmountDue);    
+    loan.lender.transfer(loan.totalAmountDue);    
 
-    //TODO: NFT transfer from NFt contract here
-    // NFTManager nftManager = NFTManager(NFTtokenAddress);
-    // NFTManager.unlockNFT(NFTtokenAddress, NFTtokenID, loan.borrower);
+    NFTMarketplace nftMarketplace = NFTMarketplace(loan.NFTtokenAddress);
+    nftMarketplace.unlockNFT(loan.NFTtokenAddress, loan.NFTtokenID, loan.borrower);
 
     // change loan status to ended
     loan.status = Status.ENDED;
     
     // Emit repayment event 
-    emit LoanRepayed(_loanID, msg.sender);
+    emit LoanRepayed(_loanID, msg.sender, msg.value);
   }
 
   /**
@@ -196,15 +213,13 @@ contract P2PLoan {
     // must be lender to default loan
     require(loan.lender == msg.sender, "only lender can default loan");
 
-    // TODO: NFT transfer from NFt contract here
-    // NFTManager nftManager = NFTManager(NFTtokenAddress);
-    // NFTManager.unlockNFT(NFTtokenAddress, NFTtokenID, loan.lender);
+    NFTMarketplace nftMarketplace = NFTMarketplace(loan.NFTtokenAddress);
+    nftMarketplace.unlockNFT(loan.NFTtokenAddress, loan.NFTtokenID, loan.borrower);
 
     loan.status = Status.DEFAULTED;
     // Emit seize event
     emit LoanDefault(_loanID, msg.sender);
   }
-  
 
    /**
       read functions for frontend
